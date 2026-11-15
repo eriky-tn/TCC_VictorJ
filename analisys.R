@@ -37,10 +37,18 @@ ANO_DF_filter <- ANO_DF_filter %>% filter(outcome != "HANG" & outcome != "PHANTO
 ## Calcular o tempo entre chegadas.
 
 ANO_DF_filter <- ANO_DF_filter %>%
-  group_by(date) %>%
-  mutate(arrival_time = vru_exit - lag(vru_exit, default = first(vru_exit)))
+  mutate(dt = as.POSIXct(paste(format(date, "%Y-%m-%d"), vru_exit),
+                         format = "%Y-%m-%d %H:%M:%S", tz = "UTC")) %>%
+  arrange(dt) %>%
+  mutate(
+    arrival_time = as.numeric(difftime(dt, lag(dt), units = "secs")),
+    arrival_time = if_else(date != lag(date), NA_real_, arrival_time)
+  )
 
 ## Fazer uma estratificação dos tempos
+
+
+
 
 
 ## Contruir o tempo de fila com base no dado padrão.
